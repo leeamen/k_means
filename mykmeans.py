@@ -72,9 +72,9 @@ class Kmeans(object):
       self.CheckCentroids()
       this_sse = self.CalSSE()
 #      logger.info('Bisecting iteration:%d SSE:%f', i, this_sse)
-      if last_sse == this_sse :
+#      if last_sse == this_sse :
 #        logger.info('Bisecting iteration over!')
-        break
+#        break
       last_sse = this_sse
     self.clusters = backup_clusters + self.clusters
 

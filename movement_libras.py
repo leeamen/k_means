@@ -14,7 +14,7 @@ def PickingRightK(x):
 #  param['k'] = []
   param['n_clusters'] = 5
   param['max_iter'] = 100
-  ks = [1] + [i for i in range(2, 30, 1)]
+  ks = [1] + [i for i in range(2, 30, 2)]
   dias = []
   sses = []
   kmeans = ml.Kmeans(param)
@@ -26,8 +26,10 @@ def PickingRightK(x):
     sse = kmeans.CalSSE()
     sses.append(sse)
   #plot
-  myplot.Plot2DLine(ks, dias)
-  myplot.Plot2DLine(ks, sses)
+  print sses
+  print dias
+  myplot.Plot2DLine(ks, dias, 'K','average diameter','average diameter and K')
+  myplot.Plot2DLine(ks, sses, 'K', 'SSE', 'SSE and K')
   myplot.Show()
 if __name__ == '__main__':
   filename = './data/movement_libras.data'
