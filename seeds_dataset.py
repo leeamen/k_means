@@ -5,7 +5,7 @@ import logging
 import mylog
 import mykmeans as ml
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.ERROR)
 
 if __name__ == '__main__':
   filename = './data/seeds_dataset.txt'
@@ -21,12 +21,21 @@ if __name__ == '__main__':
   param = {}
   param['use_random_for_k'] = 1
   param['k'] = [i for i in range(0, 210, 2)]
-  param['n_clusters'] = 7
+  param['n_clusters'] = 3
   param['max_iter'] = 100
   kmeans = ml.Kmeans(param)
   kmeans.Fit(train_x)
 #  logger.debug(kmeans)
-  pred = kmeans.Predict(train_x)
+#  pred = kmeans.Predict(train_x)
 #  logger.info('train_y:%s', train_y)
 #  logger.info('   pred:%s', pred)
 #  logger.info('k-means准确率:%f', 1.0*sum(pred == train_y)/len(train_y))
+#  ml.PickingRightK(train_x, param)
+#  ml.FitMulti(train_x, param, 100)
+  import myplot
+  myplot.Figure()
+  ml.FitMulti(train_x, param, 100)
+  ml.BisectingFitMulti(train_x, param, 100)                                                                 
+  myplot.Legend(['k-means','bisecting'])
+  myplot.Title('seeds')
+  myplot.Show() 

@@ -11,10 +11,11 @@ import time
 #np.random.seed(time.time())
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.ERROR)
 
 def sort_key(x):
-  return x.GetPointsNum()
+#  return x.GetPointsNum()
+  return x.CalSSE()
 
 class Kmeans(object):
   def __init__(self, param = {}):
@@ -31,9 +32,10 @@ class Kmeans(object):
   def InitOneCluster(self, x):
     cluster = Cluster(0, x.shape[1])
     self.clusters = []
-    self.clusters.append(cluster)
     for i in range(0, len(x)):
       cluster.AddPoint(Point(x[i]))
+    self.clusters.append(cluster)
+    self.CalCentroids()
   #2分kmeans
   def BisectingFit(self, x):
     self.InitOneCluster(x)
@@ -71,10 +73,10 @@ class Kmeans(object):
       #检查是否有空簇
       self.CheckCentroids()
       this_sse = self.CalSSE()
-#      logger.info('Bisecting iteration:%d SSE:%f', i, this_sse)
-#      if last_sse == this_sse :
-#        logger.info('Bisecting iteration over!')
-#        break
+      logger.info('Bisecting iteration:%d SSE:%f', i, this_sse)
+      if last_sse == this_sse :
+        logger.info('Bisecting iteration over!')
+        break
       last_sse = this_sse
     self.clusters = backup_clusters + self.clusters
 
@@ -123,6 +125,7 @@ class Kmeans(object):
   def CheckCentroids(self):
     for cluster in self.clusters:
       if cluster.GetPointsNum() <= 0:
+#        logger.debug('here')
         p = self.GetPointFromMaxSSECluster()
         cluster.SetCentroid(p)
   def GetPointFromMaxSSECluster(self):
@@ -204,6 +207,7 @@ class Cluster(object):
     self.point_size = point_size
     self.label = label
     self.sse = -1
+    self.has_sse = False
   def __str__(self):
     return 'centroid:' + str(self.centroid) + '.点个数:' + str(len(self.points)) + '.'
   def GetPointSize(self):
@@ -300,6 +304,58 @@ class Point(object):
   def __add__(self, p):
     return Point(self.x + p.x)
 
+import myplot
+def PickingRightK(x, param):
+  ks = [1] + [i for i in range(2, 30, 2)]
+  dias = []
+  sses = []
+  kmeans = Kmeans(param)
+  for k in ks:
+    kmeans.SetK(k)
+    kmeans.Fit(x)
+    dia = kmeans.CalAverageDiameter()
+    dias.append(dia)
+    sse = kmeans.CalSSE()
+    sses.append(sse)
+  #plot
+  print sses
+  print dias
+  myplot.Figure()
+  myplot.Title('average diameter and K')
+  myplot.Plot2DLine(ks, dias, 'K','average diameter')
+  myplot.Figure()
+  myplot.Title('SSE and K')
+  myplot.Plot2DLine(ks, sses, 'K', 'SSE')
+  myplot.Show()
+import time
+def FitMulti(x, param, times):
+  sses = []
+  kmeans = Kmeans(param)
+  runtimes = []
+  for i in range(0, times):
+    start = time.time()
+    kmeans.Fit(x)
+    end = time.time()
+    sses.append(kmeans.CalSSE())
+    runtimes.append(end - start)
+#  myplot.Figure()
+  myplot.Plot2DLine([i for i in range(0, times)], sses, 'i\'s time','SSE')
+#  myplot.Plot2DLine([i for i in range(0, times)], runtimes, 'i\'s time','run time')
+#  myplot.Show()
+def BisectingFitMulti(x, param, times):
+  sses = []
+  runtimes = []
+  kmeans = Kmeans(param)
+  for i in range(0, times):
+    start = time.time()
+    kmeans.BisectingFit(x)
+    end = time.time()
+    sses.append(kmeans.CalSSE())
+    runtimes.append(end - start)
+#  myplot.Figure()
+  myplot.Plot2DLine([i for i in range(0, times)], sses, 'i\'s time','SSE')
+#  myplot.Plot2DLine([i for i in range(0, times)], runtimes, 'i\'s time','run time')
+#  myplot.Show()
 if __name__== '__main__':
 #  dist = Distance(2, [1, 1], [2, 2])
 #  logger.debug(dist)
